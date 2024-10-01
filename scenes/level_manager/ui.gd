@@ -57,14 +57,11 @@ func show_details(message: String):
 	%DetailsLabel.text = message
 
 func disable_all_buttons():
-	#print_debug("Turning off all the buttons")
 	for button in get_tree().get_nodes_in_group("buttons"):
-		#print_debug("disabling " + button.name)
 		button.disabled = true
 		if button is TextureButton:
 			button.modulate = Color.DIM_GRAY
 func enable_all_buttons():
-	#print("all buttons are ON")
 	for button in get_tree().get_nodes_in_group("buttons"):
 		button.disabled = false
 	show_affordable_towers()

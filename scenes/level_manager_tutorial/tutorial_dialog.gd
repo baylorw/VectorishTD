@@ -1,7 +1,5 @@
 class_name TutorialDialogWindow extends MarginContainer
 
-#signal dialog_finished
-
 @onready var tutorial_label: Label = %TutorialLabel
 @onready var continue_button: Button = %ContinueButton
 @onready var buttons_container: HBoxContainer = %ButtonsContainer

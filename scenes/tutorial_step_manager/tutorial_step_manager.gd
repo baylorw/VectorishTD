@@ -16,7 +16,6 @@ func _ready() -> void:
 
 func start():
 	current_step = get_child(step_number)
-	#print_debug("FSM starting, passing in tutorial_manager=" + str(tutorial_manager))
 	print("TutorialStepManager starting")
 	current_step.enter(tutorial_manager)
 
