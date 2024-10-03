@@ -4,9 +4,10 @@ signal creep_reached_base
 
 const good_color := Color(0,1,0, 0.5)
 const bad_color  := Color(1,0,0, 0.5)
-const message_time_s : float = 0.75
+const message_time_s : float = 2.75
 
 @onready var ui: LevelUI = %UI
+@onready var message: RichTextLabel = %Message
 @onready var wave_start_message: VBoxContainer = %WaveStartMessage
 @onready var wave_end_message: VBoxContainer = %WaveEndMessage
 @onready var wave_start_label: Label = %WaveStartLabel
@@ -20,7 +21,6 @@ const message_time_s : float = 0.75
 
 var play_area : LevelData
 var path_by_name := {}
-
 
 #--- Pointers to run-time loaded map.
 var terrain_tilemap : TileMapLayer 
@@ -37,6 +37,9 @@ var current_wave : Wave
 var max_wave_ticks : int
 
 var selected_tower : Tower
+var previous_selected_tower : Tower
+
+var user_desired_speed := 1.0
 
 func _ready():
 	Engine.time_scale = 1
@@ -125,7 +128,8 @@ func on_build_tower_button_pressed(tower_name : String):
 	if is_attempting_tower_placement:
 		cancel_build()
 	
-	if CurrentLevel.LevelStatus.BUILD != CurrentLevel.level_status:
+	if (CurrentLevel.LevelStatus.BUILD != CurrentLevel.level_status) and \
+	   (CurrentLevel.LevelStatus.WAVE  != CurrentLevel.level_status):
 		print("Can't build new towers, game currently in status=" + str(CurrentLevel.level_status))
 		return
 	var tower_scene_fqn = "res://scenes/towers/%s.tscn" % tower_name
@@ -134,6 +138,7 @@ func on_build_tower_button_pressed(tower_name : String):
 		print("ERROR: Unknown tower. FQN=" + tower_scene_fqn)
 		return
 	new_tower = tower_data.instantiate()
+	new_tower.set_physics_process(false)
 	is_attempting_tower_placement = true
 	#--- You MUST add this to the scene graph before modifying properties that use the onready variables.
 	%Towers.add_child(new_tower)
@@ -192,23 +197,27 @@ func _unhandled_input(event: InputEvent):
 			cancel_build()
 			
 	elif event.is_action_pressed("left_click"):
-		if (CurrentLevel.level_status != CurrentLevel.LevelStatus.BUILD) and (CurrentLevel.level_status != CurrentLevel.LevelStatus.WAVE):
+		if (CurrentLevel.level_status != CurrentLevel.LevelStatus.BUILD) and \
+		   (CurrentLevel.level_status != CurrentLevel.LevelStatus.WAVE):
 			return
 		var tile_position = coordinate_global_to_map(get_global_mouse_position())
 		if null == tile_position:
 			return
 		if tower_by_map_coord.has(tile_position):
-			var previous_selected_tower = selected_tower
+			previous_selected_tower = selected_tower
 			selected_tower = tower_by_map_coord[tile_position]
 			selected_tower.toggle_show_range()
 			ui.log_clear()
 			if (CurrentLevel.level_status == CurrentLevel.LevelStatus.BUILD):
 				#--- Don't show the info for the tower if it's already showing.
+				if tower_info_popup_panel.visible and (selected_tower != previous_selected_tower):
+					print("hiding previous tower's range")
+					previous_selected_tower.show_range(false)
 				if !tower_info_popup_panel.visible or (selected_tower != previous_selected_tower):
-					selected_tower.show_range(true)
 					show_tower_info(get_global_mouse_position())
+					print("showing new tower's range")
+					selected_tower.show_range(true)
 	elif event.is_action_pressed("right_click"):
-		#print("right click")
 		if (CurrentLevel.level_status != CurrentLevel.LevelStatus.BUILD) and (CurrentLevel.level_status != CurrentLevel.LevelStatus.WAVE):
 			return
 		var tile_position = coordinate_global_to_map(get_global_mouse_position())
@@ -216,6 +225,7 @@ func _unhandled_input(event: InputEvent):
 			return
 		if tower_by_map_coord.has(tile_position):
 			selected_tower = tower_by_map_coord[tile_position]
+			selected_tower.toggle_show_range()
 		
 	elif event.is_action_pressed("ui_cancel"):
 		_on_quit_button_pressed()
@@ -240,6 +250,7 @@ func build_tower():
 	tower_by_map_coord[map_coord] = new_tower
 
 	new_tower.show_range(false)
+	new_tower.set_physics_process(true)
 	
 	Events.tower_built.emit()
 
@@ -248,7 +259,8 @@ func cancel_build():
 	new_tower.queue_free()
 
 func can_build():
-	if CurrentLevel.level_status != CurrentLevel.LevelStatus.BUILD:
+	if (CurrentLevel.level_status != CurrentLevel.LevelStatus.BUILD) and \
+	  (CurrentLevel.level_status != CurrentLevel.LevelStatus.WAVE):
 		print("can't build, level isn't in build mode")
 		return false
 	if !is_attempting_tower_placement:
@@ -315,7 +327,7 @@ func setup_next_wave():
 	show_wave_contents(CurrentLevel.wave_number)
 	show_default_paths()
 
-func spawn_creeps():
+func start_wave():
 	Events.wave_started.emit()
 	
 	CurrentLevel.level_status = CurrentLevel.LevelStatus.WAVE
@@ -329,7 +341,28 @@ func spawn_creeps():
 	await tween.finished
 	wave_start_message.visible = false
 	
+	Engine.time_scale = user_desired_speed
+	#--- The timer object will call spawn_creep_at() for each creep.
 	%WaveTickTimer.start()
+
+func spawn_creep_at(start_position_global : Vector2, path : Array[Vector2], creep_name: String, creep_resource, level: int):
+	var new_enemy : Creep = creep_resource.instantiate()
+	new_enemy.set_level(level)
+	new_enemy.name = creep_name
+	new_enemy.add_to_group("creeps")
+	new_enemy.position = start_position_global
+	%Creeps.add_child(new_enemy, true)
+	new_enemy.destroyed.connect(on_creep_destroyed)
+	new_enemy.tree_exited.connect(on_creep_freed)
+	new_enemy.process_mode = Node.PROCESS_MODE_INHERIT
+
+	if path.is_empty():
+		print("!!! NO PATH FOUND !!! from=" + str(start_position_global))
+		new_enemy.queue_free()
+		return
+
+	#--- Path following is destructive so give each agent their own copy of the path.
+	new_enemy.follow(path.duplicate())
 
 func fade(object, start: float, end: float, time_length_s: float, should_loop: bool=false) -> Tween:
 	var tween = create_tween()
@@ -360,25 +393,6 @@ func _on_wave_tick_timer_timeout() -> void:
 		var path : Path = path_by_name[path_name]
 		var creep_instance_name = "creep_%s_%s" % [path_name, CurrentLevel.wave_tick]
 		spawn_creep_at(path.start_coord_global, path.waypoints_global, creep_instance_name, creep_resource, creep_specifier.level)
-
-func spawn_creep_at(start_position_global : Vector2, path : Array[Vector2], creep_name: String, creep_resource, level: int):
-	var new_enemy : Creep = creep_resource.instantiate()
-	new_enemy.set_level(level)
-	new_enemy.name = creep_name
-	new_enemy.add_to_group("creeps")
-	new_enemy.position = start_position_global
-	%Creeps.add_child(new_enemy, true)
-	new_enemy.destroyed.connect(on_creep_destroyed)
-	new_enemy.tree_exited.connect(on_creep_freed)
-	new_enemy.process_mode = Node.PROCESS_MODE_INHERIT
-
-	if path.is_empty():
-		print("!!! NO PATH FOUND !!! from=" + str(start_position_global))
-		new_enemy.queue_free()
-		return
-
-	#--- Path following is destructive so give each agent their own copy of the path.
-	new_enemy.follow(path.duplicate())
 
 func coords_map_to_global(coords_map : Array[Vector2i]) -> Array[Vector2]:
 	var coords_global : Array[Vector2] = []
@@ -446,10 +460,6 @@ func is_a_buildable_position_global(position_global : Vector2) -> bool:
 #####################
 func on_creep_destroyed():
 	ui.show_money()
-	#print("Creep destroyed. count=" + str(%Creeps.get_child_count()))
-	#if 0 == %Creeps.get_child_count():
-		#print("wave over, back to build mode")
-		#CurrentLevel.level_status = CurrentLevel.LevelStatus.BUILD
 
 ## The creep has left the scene graph, probably after a queue_free().
 ## Because it was queued, we can't get an accurate count of creeps remaining
@@ -469,7 +479,10 @@ func on_creep_freed():
 func on_wave_ended():
 	print("wave over, we survived, back to build mode")
 	
+	Engine.time_scale = 1.0
+	
 	wave_end_label.text = "Completion Bonus $%s" % [current_wave.completion_bonus]
+	wave_end_message.modulate.a = 0
 	wave_end_message.visible = true
 	var tween = fade(wave_end_message, 0, 1, 0.5)
 	await tween.finished
@@ -478,12 +491,28 @@ func on_wave_ended():
 	await tween.finished
 	wave_end_message.visible = false
 	
+	if current_wave.end_message:
+		show_message(current_wave.end_message, 5.0)
+	
 	CurrentLevel.level_status = CurrentLevel.LevelStatus.BUILD
 	CurrentLevel.money += current_wave.completion_bonus
 	ui.show_money()
 	%SendWaveButton.disabled = false
 	setup_next_wave()
+	
 	Events.wave_ended.emit()
+
+func show_message(message_text: String, display_time:=-1):
+	if -1 == display_time:
+		display_time = message_time_s
+	message.text = message_text
+	message.visible = true
+	var tween = fade(message, 0, 1, 0.5)
+	await tween.finished
+	await get_tree().create_timer(message_time_s).timeout
+	tween = fade(message, 1, 0, 0.5)
+	await tween.finished
+	message.visible = false
 
 func on_creep_reached_base():
 	CurrentLevel.base_health -= 1
@@ -517,7 +546,6 @@ func center_control(control : Container):
 		get_viewport().size.y / 2 - control.get_rect().size.y / 2
 	)
 
-
 ###########################################################
 # UI Buttons
 ###########################################################
@@ -533,19 +561,27 @@ func _on_send_wave_button_pressed():
 		print("Can't send then next wave, we're in status=" + str(CurrentLevel.level_status))
 		return
 	%SendWaveButton.disabled = true
-	spawn_creeps()
+	start_wave()
 
 func _on_pause_button_pressed() -> void:
 	Engine.time_scale = 0.0
 	
 func _on_speed_half_button_pressed() -> void:
-	Engine.time_scale = 0.5
+	user_desired_speed = 0.5
+	if CurrentLevel.LevelStatus.WAVE == CurrentLevel.level_status:
+		Engine.time_scale = 0.5
 func _on_speed_normal_button_pressed() -> void:
-	Engine.time_scale = 1
+	user_desired_speed = 1
+	if CurrentLevel.LevelStatus.WAVE == CurrentLevel.level_status:
+		Engine.time_scale = 1
 func _on_speed_2_button_pressed() -> void:
-	Engine.time_scale = 2
+	user_desired_speed = 2
+	if CurrentLevel.LevelStatus.WAVE == CurrentLevel.level_status:
+		Engine.time_scale = 2
 func _on_speed_5_button_pressed() -> void:
-	Engine.time_scale = 5
+	user_desired_speed = 5
+	if CurrentLevel.LevelStatus.WAVE == CurrentLevel.level_status:
+		Engine.time_scale = 5
 #endregion
 
 #region Tower Info popup events
@@ -583,4 +619,13 @@ func _on_upgrade_button_pressed() -> void:
 	ui.show_money()
 	tower_info_popup_panel.set_info(selected_tower)
 	Events.tower_upgraded.emit()
+
+func _on_tower_info_popup_panel_about_to_popup() -> void:
+	selected_tower.show_range(true)
+	pass
+	
+func _on_tower_info_popup_panel_popup_hide() -> void:
+	print("hiding popup and selected tower's range. selected=" + selected_tower.type)
+	selected_tower.show_range(false)
+	pass
 #endregion

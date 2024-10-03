@@ -7,6 +7,7 @@ enum TargetingStrategy {Closest_To_Goal, Most_Health, Least_Health, Fastest, Nea
 @onready var range_collider: CollisionShape2D = %RangeCollider
 @onready var range_sprite: Sprite2D = %RangeSprite
 @onready var shot_timer: Timer = $ShotTimer
+@onready var level_label: Label = %LevelLabel
 
 ## Name of the tower (e.g., Green 1). Can't use name at runtime because new instances get new names.
 @export var type : String 
@@ -77,6 +78,7 @@ func set_level(value: int):
 	current_damage_per_shot = get_damage_at(level)
 	current_range_in_pixels = get_range_at(level)
 	set_range(current_range_in_pixels)
+	level_label.text = str(level)
 	#print("new values level=%s, dmg=%s, range=%s" % [level, current_damage_per_shot, current_range_in_pixels])
 
 func get_damage_at(target_level: int):
@@ -124,6 +126,7 @@ func set_range(new_range : int):
 	range_collider.shape.radius = (new_range * 0.5)
 	#--- What the fuck is wrong with Godot? You can't set the size directly? WTF?
 	var fucking_scale_factor = new_range / (range_sprite.texture.get_width() as float)
+	#var fucking_scale_factor = (range_collider.shape.radius*0.5) / (range_sprite.texture.get_width() as float)
 	#print("fucking sprite scaling factor=" + str(fucking_scale_factor))
 	range_sprite.scale = Vector2(fucking_scale_factor, fucking_scale_factor)
 	#print("range_in_pixels=%s, collider radius=%s, scale=%s" % [range_in_pixels, range_collider.shape.radius, range_sprite.scale])

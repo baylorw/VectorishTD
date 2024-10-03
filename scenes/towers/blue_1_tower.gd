@@ -23,7 +23,8 @@ func fire():
 		new_beam.visible = true
 		%Shots.add_child(new_beam)
 	shot_visibility_timer.start()
-	fire_sound.play()
+	#fire_sound.play()
+	Sfx.play_sound("jump")
 	
 	for enemy in enemies:
 		enemy.on_hit(current_damage_per_shot)

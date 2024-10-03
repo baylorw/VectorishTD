@@ -16,23 +16,39 @@ func setup_paths():
 	path.kill_zone       = %KillZone
 
 func setup_waves():
-	waves.push_back(create_uniform_wave(2, "weak",   20, 1))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 2))
-	waves.push_back(create_uniform_wave(2, "normal", 20, 3))
-	waves.push_back(create_uniform_wave(2, "fast",   20, 4, 0.25))
-	waves.push_back(create_uniform_wave(2, "tough",  10, 5, 1))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 6))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 7))
-	waves.push_back(create_uniform_wave(2, "normal", 20, 8))
-	waves.push_back(create_uniform_wave(2, "fast",   20, 9, 0.25))
-	waves.push_back(create_uniform_wave(2, "tough",  10, 10, 1))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 11))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 12))
-	waves.push_back(create_uniform_wave(2, "normal", 20, 13))
-	waves.push_back(create_uniform_wave(2, "fast",   20, 14, 0.25))
-	waves.push_back(create_uniform_wave(2, "tough",  10, 15, 1))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 16))
-	waves.push_back(create_uniform_wave(2, "weak",   20, 17))
-	waves.push_back(create_uniform_wave(2, "normal", 20, 18))
-	waves.push_back(create_uniform_wave(2, "fast",   20, 19, 0.25))
-	waves.push_back(create_uniform_wave(2, "tough",  10, 20, 1))
+	var wave  : Wave
+	var number_of_paths := 2
+
+	waves.push_back(create_uniform_wave(number_of_paths, "weak",   20, 9))
+	waves.push_back(create_uniform_wave(number_of_paths, "normal", 20, 10))
+	waves.push_back(create_uniform_wave(number_of_paths, "fast",   20, 11, 0.25))
+	
+	wave = Wave.new()
+	waves.push_back(wave)
+	for path_number in number_of_paths:
+		var path_name = "path_" + str(path_number+1)
+		var path_wave = PathWave.new()
+		wave.wave_by_path[path_name] = path_wave
+		add_creep_to_path_wave(path_wave, "normal",  5, 12)
+		add_creep_to_path_wave(path_wave, "tough",   1, 12)
+		add_creep_to_path_wave(path_wave, "normal",  3, 12)
+		add_creep_to_path_wave(path_wave, "chicken", 1, 12)
+		add_creep_to_path_wave(path_wave, "normal",  3, 12)
+		add_creep_to_path_wave(path_wave, "chicken", 1, 12)
+	
+	waves.push_back(create_uniform_wave(number_of_paths, "weak",   20, 13))
+	waves.push_back(create_uniform_wave(number_of_paths, "normal", 20, 14))
+	waves.push_back(create_uniform_wave(number_of_paths, "fast",   20, 15, 0.25))
+	
+	wave = Wave.new()
+	waves.push_back(wave)
+	for path_number in number_of_paths:
+		var path_name = "path_" + str(path_number+1)
+		var path_wave = PathWave.new()
+		wave.wave_by_path[path_name] = path_wave
+		add_creep_to_path_wave(path_wave, "weak",    5, 20)
+		add_creep_to_path_wave(path_wave, "chicken", 1, 20)
+		add_creep_to_path_wave(path_wave, "normal",  3, 20)
+		add_creep_to_path_wave(path_wave, "chicken", 1, 20)
+		add_creep_to_path_wave(path_wave, "fast",    3, 20)
+		add_creep_to_path_wave(path_wave, "chicken", 1, 20)

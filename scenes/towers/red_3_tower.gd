@@ -22,4 +22,5 @@ func fire():
 	self.damage_done += current_damage_per_shot
 	#bullet.scale = Vector2(2,2)
 	%Shots.add_child(bullet)
-	fire_sound.play()
+	#fire_sound.play()
+	Sfx.play_sound("cannon")

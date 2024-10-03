@@ -27,12 +27,12 @@ collision_layer = 2
 motion_mode = 1
 wall_min_slide_angle = 0.0
 script = ExtResource("1_y5k07")
+base_max_health = 300
+base_kill_value = 2
 fade_mode = "Once"
 grow_mode = "Loop"
 grow_start = 0.25
 grow_end = 0.6
-base_max_health = 300
-base_kill_value = 2
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
@@ -82,6 +82,7 @@ texture = ExtResource("6_2hwia")
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("7_svl7d")
+bus = &"SFX"
 
 [node name="EffectsPollingTimer" type="Timer" parent="."]
 unique_name_in_owner = true

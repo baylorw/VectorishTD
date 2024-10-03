@@ -4,6 +4,7 @@ class_name Wave extends Node
 var wave_by_path := {}
 var time_between_creeps_sec := 0.5
 var completion_bonus := 100
+var end_message : String
 
 func max_wave_ticks() -> int:
 	var max_val = 0

@@ -1,6 +1,6 @@
 class_name LevelData extends Node2D
 
-@onready var terrain_tilemap : TileMapLayer = %GroundTileMapLayer
+@onready var terrain_tilemap  : TileMapLayer = %GroundTileMapLayer
 @onready var blockers_tilemap : TileMapLayer = %WallsTileMapLayer
 
 #@onready var border_size_ddlb: OptionButton = %BorderSizeDDLB

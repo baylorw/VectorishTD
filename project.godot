@@ -32,6 +32,11 @@ SceneNavigation="*res://globals/SceneNavigation.gd"
 CreepBook="*res://globals/CreepBook.gd"
 Events="*res://globals/Events.gd"
 Sfx="*res://globals/SFX.tscn"
+WaveUtil="*res://globals/WaveUtil.gd"
+
+[debug]
+
+gdscript/warnings/unused_signal=0
 
 [display]
 

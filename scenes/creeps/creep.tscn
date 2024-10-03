@@ -75,6 +75,7 @@ texture = ExtResource("6_n2qao")
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("4_j2q0m")
+bus = &"SFX"
 
 [node name="EffectsPollingTimer" type="Timer" parent="."]
 unique_name_in_owner = true

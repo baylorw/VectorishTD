@@ -3,6 +3,19 @@ class_name Creep extends CharacterBody2D
 #--- Damage done to the player's base.
 signal destroyed
 
+#--- Each child has to have this since Godot can't inherit resources.
+#@onready var death_animation: AnimatedSprite2D = %DeathAnimation
+var death_animation: AnimatedSprite2D
+
+@export_category("Stats")
+@export var base_max_health   := 100
+@export var base_kill_value   :=  10
+## How much (percentage) the health goes up per level. 
+## Formula: max_health = base * (1+multiplier)^(level-1)
+@export var health_multiplier := 0.22
+## How much money the creep's value goes up each level. 
+@export var value_increase    := 1
+
 @export_category("Animation")
 ## Should this creep fade in and/or out?
 @export_enum("None", "Once", "Loop") var fade_mode := "None"
@@ -34,14 +47,6 @@ signal destroyed
 @export var close_enough := 10.0
 var current_slow_radius := midpoint_slow_radius
 
-@export_category("Stats")
-@export var base_max_health   := 100
-@export var base_kill_value   :=  10
-## How much (percentage) the health goes up per level. 
-## Formula: max_health = base * (1+multiplier)^(level-1)
-@export var health_multiplier := 0.22
-## How much money the creep's value goes up each level. 
-@export var value_increase    := 1
 # Don't initialize these variable from export variables here, use _ready(). They won't be initialized when this is set.
 var level      : int = 1
 var max_health : int
@@ -56,9 +61,9 @@ var speed      : float
 @onready var slow_icon: TextureRect = %SlowIcon
 @onready var stun_icon: TextureRect = %StunIcon
 @onready var poison_icon: TextureRect = %PoisonIcon
-var death_animation: AnimatedSprite2D
 
-var should_show_distance := false
+var should_show_distance := false :
+	set = show_distance
 var distance_label: Label
 
 var expected_health_bar_position : Vector2
@@ -80,7 +85,6 @@ func _ready():
 	set_level(level)
 	speed  = max_speed
 	
-	#print("hp position=" + str(health_bar.position) + " and status=" + str(status_icon_container.position))
 	expected_health_bar_position = health_bar.position
 	expected_status_position = status_icon_container.position
 	
@@ -94,6 +98,11 @@ func _ready():
 	
 	for icon in status_icon_container.get_children():
 		icon.visible = false
+
+	distance_label = Label.new()
+	distance_label.position = status_icon_container.position - Vector2(0,23)
+	add_child(distance_label)
+	show_distance(false)
 	
 	#--- The IDE wiring doesn't work for duplicated objects. The event calls the original object instead.
 	effects_polling_timer.timeout.connect(_on_effects_polling_timer_timeout)
@@ -101,17 +110,13 @@ func _ready():
 	effects_polling_timer.autostart = true
 	
 	setup_procedural_animation()
-	if is_instance_valid(%DeathAnimation):
-		death_animation = %DeathAnimation
+	death_animation = get_node_or_null("DeathAnimation")
+	if death_animation:
 		death_animation.visible = false
-		
-	distance_label = Label.new()
-	distance_label.position = status_icon_container.position - Vector2(0,23)
-	if should_show_distance:
-		add_child(distance_label)
-	else:
-		distance_label.visible = false
 
+func show_distance(should: bool):
+	distance_label.visible = should
+	
 func set_level(new_level: int):
 	self.level = new_level
 	kill_value = base_kill_value + ((level-1) * value_increase)
@@ -165,10 +170,6 @@ func follow(new_path : Array[Vector2]):
 	is_seeking = true
 
 func _physics_process(delta):
-	#if !is_instance_valid(status_icon_container):
-		#print("THIS SHOULD NEVER HAPPEN!!! status icons are dead but not the creep")
-		#return
-	
 	health_bar.position = global_position + expected_health_bar_position
 	status_icon_container.position = global_position + expected_status_position
 	_physics_process_steering(delta)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://b5du67lh81da7"]
+[gd_scene load_steps=38 format=3 uid="uid://b5du67lh81da7"]
 
 [ext_resource type="Script" path="res://scenes/level_manager_tutorial/tutorial_level_manager.gd" id="1_44fsp"]
 [ext_resource type="Texture2D" uid="uid://bjiyrb7l3c570" path="res://assets/images/backgrounds/main_menu_background.jpg" id="2_yib50"]
@@ -14,7 +14,6 @@
 [ext_resource type="StyleBox" uid="uid://c5u8tjttfwnaf" path="res://resources/green_menu_button.tres" id="13_wwah3"]
 [ext_resource type="Texture2D" uid="uid://b5001kb6nf704" path="res://assets/ui/icons/heart 4.PNG" id="14_a13qp"]
 [ext_resource type="TileSet" uid="uid://bmdyj28ichv7b" path="res://assets/tilesets/vectorTDTileSet.tres" id="14_c2crw"]
-[ext_resource type="TileSet" path="res://assets/tilesets/annotations/school_tileset.tres" id="15_kbury"]
 [ext_resource type="Texture2D" uid="uid://5ni5lqnkpuh" path="res://assets/ui/icons/money 5.PNG" id="15_lul5w"]
 [ext_resource type="Script" path="res://scenes/tilemap_annotations/annotations_tile_map.gd" id="16_kupye"]
 [ext_resource type="Texture2D" uid="uid://by4x6nnilrqu3" path="res://assets/ui/white square.png" id="17_cdvds"]
@@ -22,10 +21,10 @@
 [ext_resource type="PackedScene" uid="uid://c0qn226nbfu51" path="res://menus/map_view_settings/map_view_settings_panel.tscn" id="19_h2jbg"]
 [ext_resource type="Theme" uid="uid://xbaauqu77y27" path="res://resources/map_popup_menu.tres" id="20_54yuy"]
 [ext_resource type="Script" path="res://scenes/level_manager/tower_info_popup_panel.gd" id="21_ouu6l"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/annotations/target aiming.png" id="22_i7d5h"]
+[ext_resource type="Texture2D" uid="uid://cojnhoyojelnq" path="res://assets/tilesets/annotations/target aiming.png" id="22_i7d5h"]
 [ext_resource type="Texture2D" uid="uid://bsrgfe8rg0q7q" path="res://assets/images/creeps/plus.png" id="23_gbwfh"]
 [ext_resource type="Texture2D" uid="uid://b6l5b7oklc8b3" path="res://assets/tilesets/floor 50 white.png" id="24_cvumy"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/annotations/arrow up.png" id="24_p12xy"]
+[ext_resource type="Texture2D" uid="uid://nkn8tdjbmrb6" path="res://assets/tilesets/annotations/arrow up.png" id="24_p12xy"]
 [ext_resource type="Shader" path="res://effects/cutout.gdshader" id="24_ujbma"]
 [ext_resource type="Texture2D" uid="uid://b4l3ye4x5hlpo" path="res://assets/images/ui/cursor_pointer3D_shadow.png" id="25_aepf2"]
 [ext_resource type="Script" path="res://scenes/level_manager_tutorial/tutorial_manager.gd" id="27_yb36a"]
@@ -56,7 +55,7 @@ shader_parameter/bry = 0.0
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_m1est"]
 size = Vector2(50, 50)
 
-[node name="LevelManager" type="Node2D"]
+[node name="TutorialLevelManager" type="Node2D"]
 script = ExtResource("1_44fsp")
 metadata/_edit_vertical_guides_ = [-84.0]
 
@@ -384,22 +383,18 @@ metadata/_edit_lock_ = true
 
 [node name="ShadeTileMap" type="TileMapLayer" parent="Annotations"]
 unique_name_in_owner = true
-tile_set = ExtResource("15_kbury")
 script = ExtResource("16_kupye")
 
 [node name="TileBordersTileMap" type="TileMapLayer" parent="Annotations"]
 unique_name_in_owner = true
-tile_set = ExtResource("15_kbury")
 script = ExtResource("16_kupye")
 
 [node name="PathTileMap" type="TileMapLayer" parent="Annotations"]
 unique_name_in_owner = true
-tile_set = ExtResource("15_kbury")
 script = ExtResource("16_kupye")
 
 [node name="AnnotationsTileMap" type="TileMapLayer" parent="Annotations"]
 unique_name_in_owner = true
-tile_set = ExtResource("15_kbury")
 script = ExtResource("16_kupye")
 
 [node name="Paths" type="Node2D" parent="Annotations"]
@@ -825,7 +820,6 @@ layout_mode = 2
 
 [node name="QuitButton" type="Button" parent="Tutorial/TutorialCanvasLayer/TutorialDialog/MarginContainer/VBoxContainer/ButtonsContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Main Menu"
 
 [node name="ContinueButton" type="Button" parent="Tutorial/TutorialCanvasLayer/TutorialDialog/MarginContainer/VBoxContainer/ButtonsContainer"]

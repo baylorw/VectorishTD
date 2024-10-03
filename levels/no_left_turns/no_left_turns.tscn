@@ -15,6 +15,7 @@ size = Vector2(210, 45)
 
 [node name="Map" type="Node2D"]
 script = ExtResource("1_8kgr2")
+starting_money = 3500
 
 [node name="MapArea" type="Sprite2D" parent="."]
 position = Vector2(525, 375)

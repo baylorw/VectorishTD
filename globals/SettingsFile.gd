@@ -37,21 +37,32 @@ func load_data():
 	load_audio_settings()
 	load_control_settings()
 	load_video_settings()
+	load_locale_settings()
 
 ## These are the values to use if the settings file we load doesn't have a value for a setting.
 func set_defaults():
+	#--- Locale
+	config.set_value("Misc", "locale", "en")
+	
 	#--- Key bindings
 	for action in InputMap.get_actions():
 		if InputMap.action_get_events(action).size() != 0:
 			config.set_value("Controls", action, InputMap.action_get_events(action)[0])
+	
 	#--- Video
 	config.set_value("Video", "fullscreen", DisplayServer.WINDOW_MODE_WINDOWED)
 	config.set_value("Video", "borderless", DisplayServer.WINDOW_MODE_WINDOWED)
 	config.set_value("Video", "vsync", DisplayServer.WINDOW_MODE_WINDOWED)
+	
 	#--- Audio
 	for bus_index in 3:
 		config.set_value("Audio", str(bus_index), 100.0)
 
+func load_locale_settings():
+	var locale = config.get_value("Misc", "locale")
+	TranslationServer.set_locale(locale)
+
+	
 func load_video_settings():
 	var screen_type = config.get_value("Video", "fullscreen")
 	print("loaded screen_type=" + str(screen_type))

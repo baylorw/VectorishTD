@@ -72,7 +72,8 @@ func fire():
 		enemy.on_hit(current_damage_per_shot)
 		self.damage_done += current_damage_per_shot
 	shot_animator.play("fire")
-	fire_sound.play()
+	#fire_sound.play()
+	Sfx.play_sound("jump")
 	
 
 func get_description() -> String:

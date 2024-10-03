@@ -7,6 +7,7 @@
 [ext_resource type="Material" uid="uid://nk0apy67el1o" path="res://effects/hit_particles.tres" id="5_vo8gl"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ku21i"]
+resource_local_to_scene = true
 radius = 25.0
 
 [sub_resource type="Animation" id="Animation_8aowm"]
@@ -150,9 +151,9 @@ shape = SubResource("CircleShape2D_ku21i")
 
 [node name="Beam" type="Line2D" parent="."]
 unique_name_in_owner = true
-modulate = Color(0, 1, 0, 1)
 points = PackedVector2Array(0, 0, 100, 100)
 width = 5.0
+default_color = Color(0, 1, 0, 0.501961)
 
 [node name="FireAnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
@@ -164,6 +165,7 @@ libraries = {
 unique_name_in_owner = true
 stream = ExtResource("4_uu42k")
 pitch_scale = 5.0
+bus = &"SFX"
 
 [node name="ShotTimer" type="Timer" parent="."]
 wait_time = 0.25
@@ -186,6 +188,15 @@ process_material = ExtResource("5_vo8gl")
 lifetime = 0.8
 one_shot = true
 explosiveness = 1.0
+
+[node name="LevelLabel" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -25.0
+offset_top = -27.0
+offset_right = -6.0
+offset_bottom = -4.0
+text = "10"
+horizontal_alignment = 1
 
 [connection signal="body_entered" from="RangeArea" to="." method="_on_range_body_entered"]
 [connection signal="body_exited" from="RangeArea" to="." method="_on_range_body_exited"]
